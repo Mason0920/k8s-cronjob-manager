@@ -1,0 +1,16 @@
+# Go
+/bin/
+*.test
+*.out
+coverage.*
+
+# Web UI (the placeholder in web/dist/placeholder is committed)
+web/node_modules/
+web/dist/ui/
+
+# Local
+.env
+*.kubeconfig
+.DS_Store
+.idea/
+.vscode/

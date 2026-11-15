@@ -1,0 +1,41 @@
+# Two permission sets. They are ClusterRoles only so they can be reused;
+# access is granted per namespace with RoleBindings (see rolebinding.yaml),
+# never with a ClusterRoleBinding.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cronjob-manager-operator
+  labels:
+    app.kubernetes.io/name: k8s-cronjob-manager
+rules:
+  - apiGroups: ["batch"]
+    resources: ["cronjobs"]
+    verbs: ["get", "list", "watch", "patch"] # patch: spec.suspend only
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "create"] # create: run now
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+---
+# Use this one together with READ_ONLY=true so the API server also refuses
+# writes, not just the application.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cronjob-manager-viewer
+  labels:
+    app.kubernetes.io/name: k8s-cronjob-manager
+rules:
+  - apiGroups: ["batch"]
+    resources: ["cronjobs", "jobs"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]

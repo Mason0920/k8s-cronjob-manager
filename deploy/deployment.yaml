@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cronjob-manager
+  namespace: cronjob-manager
+  labels:
+    app.kubernetes.io/name: k8s-cronjob-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: k8s-cronjob-manager
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: k8s-cronjob-manager
+    spec:
+      serviceAccountName: cronjob-manager
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: cronjob-manager
+          # Build and push your own image first (see README), or load it into
+          # kind with `kind load docker-image`.
+          image: k8s-cronjob-manager:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: NAMESPACES
+              value: batch-jobs
+            - name: LABEL_SELECTOR
+              value: ""
+            - name: READ_ONLY
+              value: "false"
+            - name: AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cronjob-manager
+                  key: auth-token
+                  optional: true
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]

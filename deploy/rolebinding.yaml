@@ -1,0 +1,17 @@
+# One RoleBinding per namespace listed in NAMESPACES. Copy this block for
+# each additional namespace.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cronjob-manager
+  namespace: batch-jobs
+  labels:
+    app.kubernetes.io/name: k8s-cronjob-manager
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cronjob-manager-operator
+subjects:
+  - kind: ServiceAccount
+    name: cronjob-manager
+    namespace: cronjob-manager
